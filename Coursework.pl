@@ -141,14 +141,16 @@ isAdverb(Word,adverb(Word)):-
     adverb(Word).
 
 
-
+%reverses list
 myRev([],Temp,Temp).
 myRev([H|Tail],Temp,OutList):-
 	myRev(Tail,[H|Temp],OutList).
 
+%checks for synonyms
 syn(In,Out):-
     switch(In,[],Out).
 
+%checks each value against the synoynm lists
 switch([],Temp,Out):-
     myRev(Temp,[],Out).
 switch([H|List],Temp,Out):-
@@ -157,6 +159,9 @@ switch([H|List],Temp,Out):-
 switch([H|List],Temp,Out):-
     switch(List,[H|Temp],Out).
 
+% checks if the data item is in the synonym list. if it is, the head of
+% the list is returned. the head is not checked as it would be returned
+% regardless.
 swap(In,H):-
     synonym([H|X]),
     member(In,X).
@@ -186,5 +191,5 @@ adj(more).
 adj(fine).
 adj(short).
 adj(current).
-adverb(x).
+%adverb(x).
 
