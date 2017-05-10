@@ -1,82 +1,128 @@
-/*main([],Temp):-
-    myRev(Temp,[],Out),
-    write(Out).
-main([Word|Input],Temp):-
-    isNoun(Word,Output),
-    main(Input,[Output|Temp]).
-main([Word|Input],Temp):-
-    isDet(Word,Output),
-    main(Input,[Output|Temp]).
-main([Word|Input],Temp):-
-    isAdj(Word,Output),
-    main(Input,[Output|Temp]).
-main([Word|Input],Temp):-
-    isVerb(Word,Output),
-    main(Input,[Output|Temp]).
-main([_|Input],Output):-
-    main(Input,[error|Output]).*/
-
-
-
 main2(In,X):-
     m(In,Temp),
-    sentence(Temp,[],X).
+    sentence(Temp,[],X),
+    break(X).
+
+break([[X,Y]|Z]):-
+    rule(X,[Y],Z,Out),
+    write(Out).
+
+rule(NP,V,NP2,'ls'):-
+    member(adj(short),NP),
+    member(noun(command),NP),
+    member(verb(listing),V),
+    member(adj(current),NP2),
+    member(noun(directory),NP2).
+rule(NP,V,NP2,'ls-la'):-
+    member(adj(current),NP),
+    member(noun(directory),NP),
+    member(verb(viewed),V),
+    member(det(in),NP2),
+    member(adj(more),NP2),
+    member(noun(detail),NP2).
+rule(NP,V,NP2,'cd'):-
+    member(noun(command),NP),
+    member(verb(moving),V),
+    member(det(to),NP2),
+    member(adj(higher),NP2),
+    member(noun(directory),NP2).
+rule(NP,V,NP2,'cd'):-
+    member(noun(command),NP),
+    member(verb(moves),V),
+    member(det(to),NP2),
+    member(adj(parent),NP2),
+    member(noun(directory),NP2).
+rule(NP,V,NP2,'pwd'):-
+    member(noun(command),NP),
+    member(verb(prints),V),
+    member(adj(current),NP2),
+    member(noun(directory),NP2).
+rule(NP,V,NP2,'cat 08226.txt'):-
+    member(noun(command),NP),
+    member(verb(types),V),
+    member(adj(file),NP2),
+    member(noun('08226.txt'),NP2).
 
 
 sentence([],Out,Temp):-
-    myRev(Out,[],Temp),
-    write(Temp).
-sentence(In,Out,_):-
-    np(In,Out).
-sentence(In,Out,_):-
-    vp(In,Out).
+    myRev(Out,[],Temp).
+
+sentence(In,Out,Temp):-
+    nsentence(In,Out,Temp);
+    vsentence(In,Out,Temp).
+
+nsentence([],Out,Temp):-
+    sentence([],Out,Temp).
+nsentence(In,Out,Temp):-
+    np(In,Out,Temp).
+nsentence(Rest,Out,Temp):-
+    myRev(Out,[],Nout),
+    vsentence(Rest,[Nout],Temp).
+
+vsentence([],Out,Temp):-
+    sentence([],Out,Temp).
+vsentence(In,Out,Temp):-
+    vp(In,Out,Temp).
+vsentence(Rest,Out,Temp):-
+    myRev(Out,[],Nout),
+    sentence(Rest,[Nout],Temp).
 
 
-
-np([Word|Rest],Out):-
+%NP->Det->NP2
+np([Word|Rest],Out,Temp):-
     isDet(Word,Output),
-    np2(Rest,[Output|Out]).
-np([Word|Rest],Out):-
+    np2(Rest,[Output|Out],Temp).
+np([Word|Rest],Out,Temp):-
     isDet(Word,Output),
-    np(Rest,[Output|Out]).
-np([Words],Output):-
-    np2(Words,Output).
-np([Words],Out):-
-    np(Words,Out),
-    pp(Words,Out).
-np([Words],Out):-
-    sentence(Words,Out,_).
+    np(Rest,[Output|Out],Temp).
+%NP->NP2
+np([Words],Output,Temp):-
+    np2(Words,Output,Temp).
+%NP->NP->PP
+np([Words],Out,Temp):-
+    np(Words,Out,Temp),
+    pp(Words,Out,Temp).
+np([Words],Out,Temp):-
+    nsentence(Words,Out,Temp).
 
-np2([Word|Rest],Out):-
+%NP2->Noun
+np2([Word|Rest],Out,Temp):-
     isNoun(Word,Output),
-    sentence(Rest,[Output|Out],_).
-np2([Word|Rest],Out):-
+    nsentence(Rest,[Output|Out],Temp).
+%NP2->Adj->NP2
+np2([Word|Rest],Out,Temp):-
     isAdj(Word,Output),
-    np2(Rest,[Output|Out]).
-np2([Words],Out):-
-    sentence(Words,Out,_).
+    np2(Rest,[Output|Out],Temp).
+np2([Words],Out,Temp):-
+    nsentence(Words,Out,Temp).
 
-pp([Word|Rest],Out):-
+%PP->Prep->NP
+pp([Word|Rest],Out,Temp):-
     isPrep(Word,Output),
-    np(Rest,[Output|Out]).
+    np(Rest,[Output|Out],Temp).
 
-vp([Word|Rest],Out):-
+%VP->Verb
+vp([Word|Rest],Out,Temp):-
     isVerb(Word,Output),
-    sentence(Rest,[Output|Out],_).
-vp([Word1,Word2|Rest],Out):-
+    vsentence(Rest,[Output|Out],Temp).
+%VP->(Ad)Verb->NP
+vp([Word1,Word2|Rest],Out,Temp):-
     verbAd([Word1,Word2],[],Output),
-    np(Rest,[Output|Out]).
-vp([Word1,Word2|Rest],Out):-
+    np(Rest,[Output|Out],Temp).
+%VP->(Ad)Verb
+vp([Word1,Word2|Rest],Out,Temp):-
     verbAd([Word1,Word2],[],Output),
-    sentence(Rest,[Output|Out],_).
-vp([Word|Rest],Out):-
+    vsentence(Rest,[Output|Out],Temp).
+%VP->Verb->PP
+vp([Word|Rest],Out,Temp):-
     isVerb(Word,Output),
-    pp(Rest,[Output|Out]).
-vp([Word|Rest],Out):-
+    pp(Rest,[Output|Out],Temp).
+%VP->Verb->NP
+vp([Word|Rest],Out,Temp):-
     isVerb(Word,Output),
-    np(Rest,[Output|Out]).
-vp([Words],Out):-
-    sentence(Words,Out,_).
+    np(Rest,[Output|Out],Temp).
+vp([Words],Out,Temp):-
+    vsentence(Words,Out,Temp).
 
 
 verbAd([],Out,Out).
@@ -110,9 +156,8 @@ isAdverb(Word,adverb(Word)):-
 
 noun(command).
 noun(directory).
-noun(file).
 noun(detail).
-noun('08226txt').
+noun('08226.txt').
 prep(and).
 det(a).
 det(to).
@@ -124,6 +169,7 @@ verb(types).
 verb(moves).
 verb(moving).
 verb(viewed).
+adj(file).
 adj(higher).
 adj(parent).
 adj(very).
@@ -136,22 +182,6 @@ adverb(x).
 myRev([],Temp,Temp).
 myRev([H|Tail],Temp,OutList):-
 	myRev(Tail,[H|Temp],OutList).
-
-/*myLength([],Out,Out).
-myLength([_|List],Length,Out):-
-	Temp is Length+1,
-	myLength(List,Temp,Out).
-
-trim(Num,List,Out):-
-    traverse(Num,0,List,Out).
-traverse(Num,Num,List,Out):-
-    append(List,[],Out).
-traverse(Num,Count,[_|List],Out):-
-    Count2 is Count + 1,
-    traverse(Num,Count2,List,Out). */
-
-
-
 
 m(In,Out):-
     switch(In,[],Out).
@@ -170,3 +200,7 @@ swap(In,H):-
 
 synonym([directory,folder]).
 synonym([prints,cars,views]).
+
+
+foo([[[det(a), adj(short), noun(command)], verb(listing)], det(the), adj(current), noun(directory)]).
+      %[[A,B]|C]
