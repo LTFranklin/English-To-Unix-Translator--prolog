@@ -7,20 +7,14 @@ break([[X,Y]|Z]):-
     rule(X,[Y],Z,Out),
     write(Out).
 
-rule(NP,V,NP2,'ls'):-
-    member(adj(short),NP),
-    member(noun(command),NP),
-    member(verb(listing),V),
-    member(adj(current),NP2),
-    member(noun(directory),NP2).
-rule(NP,V,NP2,'ls-la'):-
-    member(adj(current),NP),
-    member(noun(directory),NP),
-    member(verb(viewed),V),
-    member(det(in),NP2),
-    member(adj(more),NP2),
-    member(noun(detail),NP2).
-rule(NP,V,NP2,'cd'):-
+rule([det(a),adj(very),adj(short),noun(command)],[verb(listing)],[det(the),adj(current),noun(directory)],'ls').
+rule([det(the),adj(current),noun(directory)],[verb(viewed)],[det(in),adj(more),adj(fine),noun(detail)],'ls-la').
+rule([det(a),noun(command)],[verb(moving)],[det(to),det(a),adj(higher),noun(directory)],'cd').
+rule([det(a),noun(command)],[verb(moves)],[det(to),det(a),adj(parent),noun(directory)],'cd').
+rule([det(the),noun(command)],[verb(prints)],[det(the),adj(current),noun(directory)],'pwd').
+rule([det(the),noun(command)],[verb(types)],[det(the),adj(file),noun('08226.txt')],'cat 08226.txt').
+
+/*rule(NP,V,NP2,'cd'):-
     member(noun(command),NP),
     member(verb(moving),V),
     member(det(to),NP2),
@@ -41,7 +35,7 @@ rule(NP,V,NP2,'cat 08226.txt'):-
     member(noun(command),NP),
     member(verb(types),V),
     member(adj(file),NP2),
-    member(noun('08226.txt'),NP2).
+    member(noun('08226.txt'),NP2).*/
 
 
 sentence([],Out,Temp):-
